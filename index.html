@@ -1,0 +1,601 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Программа Абу-Даби 2027</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Unbounded:wght@500;700&display=swap">
+<style>
+/* Layout: шапка с действиями и палитрой типов, под ней календарь 9 дней × 06:00–21:00 с шагом 15 минут, редактор карточки выезжает справа (на телефоне снизу). */
+:root{
+  --bg:#f6f5f2; --surface:#ffffff; --ink:#212121; --muted:#6b6760; --line:#ece8e1; --line-strong:#d9d3c8;
+  --head:#4c4c4c; --head-ink:#ffffff; --accent:#b24a5c; --accent-ink:#ffffff; --focus:#b24a5c;
+  --bike:#f4ccd2; --bike-edge:#d58b98;
+  --run:#c9e3d4; --run-edge:#76ad8e;
+  --swim:#cddff0; --swim-edge:#7ba3ca;
+  --ofp:#eadcbd; --ofp-edge:#bea062;
+  --meal:#eee6d2; --meal-edge:#c9bc9a;
+  --travel:#4c4c4c; --travel-edge:#2f2f2f; --travel-ink:#ffffff;
+  --transfer:#e6e6e6; --transfer-edge:#b3b3b3;
+  --other:#ffffff; --other-edge:#bdb7ad;
+  --card-ink:#212121;
+  --warn-bg:#fbeee0; --warn-ink:#7a4a12;
+  --font-display:"Unbounded", "Manrope", system-ui, sans-serif;
+  --font-body:"Manrope", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1c1b1a; --surface:#252422; --ink:#efebe5; --muted:#a6a097; --line:#302e2b; --line-strong:#423f3a;
+    --head:#33312e; --head-ink:#f3efe9; --accent:#e08a99; --accent-ink:#1c1b1a; --focus:#e08a99;
+    --bike:#5a3940; --bike-edge:#c98390; --run:#2e4a3a; --run-edge:#6faa88; --swim:#2e4255; --swim-edge:#79a1c8;
+    --ofp:#4b4230; --ofp-edge:#b69959; --meal:#3b362b; --meal-edge:#8c8164; --travel:#e6e0d5; --travel-edge:#bdb5a6; --travel-ink:#1c1b1a;
+    --transfer:#383838; --transfer-edge:#6b6b6b; --other:#252422; --other-edge:#5a5650; --card-ink:#f3efe9;
+    --warn-bg:#3d2f1d; --warn-ink:#f1c995; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1c1b1a; --surface:#252422; --ink:#efebe5; --muted:#a6a097; --line:#302e2b; --line-strong:#423f3a;
+  --head:#33312e; --head-ink:#f3efe9; --accent:#e08a99; --accent-ink:#1c1b1a; --focus:#e08a99;
+  --bike:#5a3940; --bike-edge:#c98390; --run:#2e4a3a; --run-edge:#6faa88; --swim:#2e4255; --swim-edge:#79a1c8;
+  --ofp:#4b4230; --ofp-edge:#b69959; --meal:#3b362b; --meal-edge:#8c8164; --travel:#e6e0d5; --travel-edge:#bdb5a6; --travel-ink:#1c1b1a;
+  --transfer:#383838; --transfer-edge:#6b6b6b; --other:#252422; --other-edge:#5a5650; --card-ink:#f3efe9;
+  --warn-bg:#3d2f1d; --warn-ink:#f1c995; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:14px;line-height:1.45}
+.wrap{padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:20px 40px;max-width:1500px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,2.6vw,28px);letter-spacing:.01em;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:2px 0 0}
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-end;justify-content:space-between}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);padding:8px 12px;font-weight:600}
+button:hover{border-color:var(--ink)}
+button:disabled{opacity:.45;cursor:default;border-color:var(--line-strong)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button.ghost{background:transparent}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.card:focus-visible,.chip:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.status{font-size:12px;font-weight:600;padding:4px 10px;border-radius:999px;background:var(--line);color:var(--muted);white-space:nowrap}
+.status.dirty{background:var(--warn-bg);color:var(--warn-ink)}
+.status.ok{background:var(--run);color:var(--card-ink)}
+.banner{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+.banner p{margin:0;flex:1 1 320px;min-width:0}
+details.help{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+details.help summary{cursor:pointer;font-weight:700}
+details.help ol{margin:8px 0 4px;padding-left:20px;display:grid;gap:4px;max-width:78ch}
+.bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.palette{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;min-width:0;flex:1 1 520px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--edge);background:var(--fill);color:var(--card-ink);font-weight:600;font-size:13px;white-space:nowrap;cursor:grab;touch-action:none;user-select:none}
+.chip.on{outline:2px solid var(--ink);outline-offset:1px}
+.totals{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.totals b{color:var(--ink);font-weight:700}
+.hint{font-size:13px;color:var(--accent);font-weight:600}
+.scroller{overflow:auto;max-height:78vh;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.grid{display:grid;grid-template-columns:56px repeat(9,minmax(118px,1fr));min-width:calc(56px + 9*118px);position:relative}
+.corner,.dayhead{position:sticky;top:0;z-index:5;background:var(--head);color:var(--head-ink);padding:8px 8px;border-right:1px solid rgba(255,255,255,.08)}
+.corner{left:0;z-index:7}
+.dayhead{display:flex;flex-direction:column;gap:1px}
+.dayhead .dw{font-family:var(--font-display);font-weight:500;font-size:13px;letter-spacing:.04em;text-transform:uppercase}
+.dayhead .dd{font-size:12px;opacity:.8;font-variant-numeric:tabular-nums}
+.times{position:sticky;left:0;z-index:4;background:var(--surface);border-right:1px solid var(--line);height:var(--grid-h)}
+.times span{position:absolute;right:6px;transform:translateY(-50%);font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}
+.times span:first-child{transform:none}
+.colbody{position:relative;height:var(--grid-h);border-right:1px solid var(--line);
+  background-image:linear-gradient(var(--line-strong) 1px, transparent 1px),linear-gradient(var(--line) 1px, transparent 1px);
+  background-size:100% var(--hour), 100% calc(var(--hour) / 4)}
+.colbody.adding{cursor:copy;background-color:color-mix(in srgb, var(--accent) 5%, transparent)}
+.card{position:absolute;border-radius:7px;border:1px solid var(--edge);background:var(--fill);color:var(--card-ink);overflow:hidden;cursor:grab;touch-action:none;user-select:none;display:flex;flex-direction:column;box-shadow:0 1px 0 rgba(0,0,0,.04)}
+.card.sel{outline:2px solid var(--ink);outline-offset:1px;z-index:3}
+.card.dragging{cursor:grabbing;opacity:.9;z-index:6;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+.t-bike{--fill:var(--bike);--edge:var(--bike-edge)}
+.t-run{--fill:var(--run);--edge:var(--run-edge)}
+.t-swim{--fill:var(--swim);--edge:var(--swim-edge)}
+.t-ofp{--fill:var(--ofp);--edge:var(--ofp-edge)}
+.t-meal{--fill:var(--meal);--edge:var(--meal-edge)}
+.t-travel{--fill:var(--travel);--edge:var(--travel-edge);--card-ink:var(--travel-ink)}
+.t-transfer{--fill:var(--transfer);--edge:var(--transfer-edge)}
+.t-other{--fill:var(--other);--edge:var(--other-edge)}
+.buf{flex:none;border-bottom:1px dashed var(--edge);
+  background:repeating-linear-gradient(135deg, transparent 0 5px, color-mix(in srgb, var(--edge) 35%, transparent) 5px 6px);
+  font-size:10px;font-weight:600;padding:0 6px;display:flex;align-items:center;opacity:.95;white-space:nowrap;overflow:hidden}
+.cbody{padding:4px 7px;display:flex;flex-direction:column;gap:1px;min-height:0;overflow:hidden;flex:1}
+.ctime{font-size:11px;font-weight:600;opacity:.75;font-variant-numeric:tabular-nums}
+.ctitle{font-weight:700;font-size:12.5px;line-height:1.2}
+.cmeta{font-size:11.5px;opacity:.85}
+.cnote{font-size:11px;opacity:.75}
+.card.short .cbody{flex-direction:row;gap:6px;align-items:baseline;white-space:nowrap}
+.rz{position:absolute;left:0;right:0;bottom:0;height:9px;cursor:ns-resize}
+.rz::after{content:"";position:absolute;left:50%;bottom:3px;width:22px;height:2px;margin-left:-11px;border-radius:2px;background:var(--edge);opacity:.8}
+.drag-ghost{position:fixed;z-index:50;pointer-events:none;transform:translate(-50%,-50%)}
+.panel{position:fixed;z-index:40;background:var(--surface);color:var(--ink);border:1px solid var(--line-strong);box-shadow:0 12px 40px rgba(0,0,0,.18);
+  top:calc(16px + env(safe-area-inset-top, 0px));right:calc(16px + env(safe-area-inset-right, 0px));width:360px;max-height:calc(100% - 32px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));overflow:auto;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-family:var(--font-display);font-weight:500;font-size:15px;margin:0}
+.panel .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);min-width:0}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line-strong);border-radius:8px;padding:7px 9px;width:100%;min-width:0}
+textarea{resize:vertical}
+label.chk{display:flex;gap:8px;align-items:center;font-weight:600;font-size:13px}
+label.chk input{width:auto}
+.panel .btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+.modal-bg{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:var(--surface);color:var(--ink);border-radius:14px;padding:16px;width:min(720px,100%);max-height:90%;display:flex;flex-direction:column;gap:10px}
+.modal textarea{min-height:320px;font-size:13px;font-variant-numeric:tabular-nums}
+.modal h2{font-family:var(--font-display);font-weight:500;font-size:16px;margin:0}
+.muted{color:var(--muted)}
+.loading{padding:40px;text-align:center;color:var(--muted)}
+@media (max-width:640px){
+  .panel{left:0;right:0;top:auto;bottom:0;width:auto;border-radius:16px 16px 0 0;max-height:72%;
+    padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-bottom:calc(16px + env(safe-area-inset-bottom, 0px))}
+  .scroller{max-height:70vh}
+}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:14px;align-items:start}
+.sum{position:sticky;top:12px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.sum h2{font-family:var(--font-display);font-weight:500;font-size:15px;margin:0}
+.sum table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;font-size:13px}
+.sum th,.sum td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.sum th[scope=row]{text-align:left;font-weight:600}
+.sum thead th{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.sum thead th:first-child{text-align:left}
+.sum tfoot th,.sum tfoot td{font-weight:700;border-bottom:none}
+.sw{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--fill);border:1px solid var(--edge);margin-right:6px;vertical-align:-1px}
+.small{font-size:12px;margin:0}
+@media (max-width:900px){.main{grid-template-columns:1fr}.sum{position:static;order:-1}}
+@media (prefers-reduced-motion:no-preference){.card{transition:box-shadow .15s}}
+</style>
+
+<div id="root"><div class="wrap"><h1>Программа Абу-Даби 2027</h1><p class="loading">Загружаю программу…</p></div></div>
+
+<script type="application/json" id="fallback">{"version": 1, "updated": "2026-11-16T16:40:00+03:00", "cards": [{"id": "a19", "day": 0, "start": 900, "dur": 60, "type": "travel", "title": "Прилёт и заселение", "place": "Отель на Корнише", "km": "", "note": "", "buffer": false}, {"id": "m20", "day": 1, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b20", "day": 1, "start": 480, "dur": 150, "type": "bike", "title": "Велотренировка", "place": "Al Hudayriyat Island", "km": "60", "note": "", "buffer": true}, {"id": "r20", "day": 1, "start": 1020, "dur": 60, "type": "run", "title": "Беговая тренировка", "place": "Набережная Corniche", "km": "", "note": "группы по темпу, до 1 ч", "buffer": true}, {"id": "m21", "day": 2, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b21", "day": 2, "start": 480, "dur": 180, "type": "bike", "title": "Велотренировка", "place": "Al Hudayriyat Island", "km": "80", "note": "", "buffer": true}, {"id": "s21", "day": 2, "start": 840, "dur": 60, "type": "swim", "title": "Открытая вода", "place": "Пляж Corniche", "km": "", "note": "по желанию", "buffer": true}, {"id": "m22", "day": 3, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "r22", "day": 3, "start": 480, "dur": 60, "type": "run", "title": "Беговая тренировка", "place": "Набережная Corniche", "km": "", "note": "группы по темпу, до 1 ч", "buffer": true}, {"id": "b22", "day": 3, "start": 1080, "dur": 120, "type": "bike", "title": "Трасса Формулы-1", "place": "Yas Marina Circuit", "km": "", "note": "велосипеды и участники едут трансфером заранее", "buffer": true}, {"id": "m23", "day": 4, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b23", "day": 4, "start": 480, "dur": 120, "type": "bike", "title": "Велотренировка", "place": "Al Hudayriyat Island", "km": "50", "note": "", "buffer": true}, {"id": "s23", "day": 4, "start": 960, "dur": 120, "type": "swim", "title": "Плавание и транзиции T1, T2", "place": "Corniche", "km": "", "note": "", "buffer": true}, {"id": "m24", "day": 5, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b24", "day": 5, "start": 480, "dur": 150, "type": "bike", "title": "Велотренировка", "place": "Al Hudayriyat Island", "km": "60", "note": "", "buffer": true}, {"id": "r24", "day": 5, "start": 960, "dur": 60, "type": "run", "title": "Беговая интервальная", "place": "Парк Corniche", "km": "", "note": "задание по уровню подготовки", "buffer": true}, {"id": "m25", "day": 6, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b25", "day": 6, "start": 480, "dur": 270, "type": "bike", "title": "Велотренировка в пустыне", "place": "Al Wathba Bicycle Track", "km": "120", "note": "трансфер с велосипедами", "buffer": true}, {"id": "m26", "day": 7, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "b26", "day": 7, "start": 480, "dur": 150, "type": "bike", "title": "Брик: вело", "place": "Al Hudayriyat Island", "km": "60", "note": "", "buffer": true}, {"id": "r26", "day": 7, "start": 630, "dur": 60, "type": "run", "title": "Брик: бег", "place": "Al Hudayriyat Island", "km": "10", "note": "сразу после вело", "buffer": false}, {"id": "s26", "day": 7, "start": 960, "dur": 60, "type": "swim", "title": "Открытая вода", "place": "Al Hudayriyat Island", "km": "", "note": "", "buffer": true}, {"id": "m27", "day": 8, "start": 360, "dur": 60, "type": "meal", "title": "Завтрак", "place": "", "km": "", "note": "", "buffer": false}, {"id": "r27", "day": 8, "start": 480, "dur": 60, "type": "run", "title": "Беговая тренировка", "place": "Набережная Corniche", "km": "", "note": "группы по темпу, до 1 ч", "buffer": true}, {"id": "d27", "day": 8, "start": 720, "dur": 60, "type": "travel", "title": "Выселение и трансфер в аэропорт", "place": "", "km": "", "note": "", "buffer": false}]}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script>
+(function(){
+const {useState,useEffect,useRef,useMemo,useCallback} = React;
+const html = htm.bind(React.createElement);
+
+const START = 360, END = 1260, SNAP = 15, HOUR = 64, PPM = HOUR / 60;
+const DATA_PATH = "data/program.json";
+const UNSAVED_KEY = "abu27-unsaved-v1";
+const PENDING_KEY = "abu27-pending-v1";
+const DAYS = [
+  ["19.02","Пт","пятница, 19 февраля"],["20.02","Сб","суббота, 20 февраля"],["21.02","Вс","воскресенье, 21 февраля"],
+  ["22.02","Пн","понедельник, 22 февраля"],["23.02","Вт","вторник, 23 февраля"],["24.02","Ср","среда, 24 февраля"],
+  ["25.02","Чт","четверг, 25 февраля"],["26.02","Пт","пятница, 26 февраля"],["27.02","Сб","суббота, 27 февраля"]
+];
+const TYPES = {
+  swim:{label:"Плавание", title:"Плавание", dur:60, training:true, km:true},
+  bike:{label:"Вело", title:"Велотренировка", dur:150, training:true, km:true},
+  run:{label:"Бег", title:"Беговая тренировка", dur:60, training:true, km:true},
+  ofp:{label:"ОФП", title:"ОФП", dur:30, training:true, km:false},
+  meal:{label:"Завтрак", title:"Завтрак", dur:60, training:false, km:false},
+  travel:{label:"Прилёт / улёт", title:"Прилёт", dur:60, training:false, km:false},
+  transfer:{label:"Трансфер", title:"Трансфер", dur:30, training:false, km:false},
+  other:{label:"Другое", title:"Событие", dur:60, training:false, km:false}
+};
+const TYPE_ORDER = ["swim","bike","run","ofp","meal","travel","transfer","other"];
+
+const pad = n => String(n).padStart(2,"0");
+const fmt = m => pad(Math.floor(m/60)) + ":" + pad(m%60);
+const snap = v => Math.round(v / SNAP) * SNAP;
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const uid = () => "c" + Math.random().toString(36).slice(2,9);
+const TIMES = []; for (let m = START; m <= END; m += SNAP) TIMES.push(m);
+
+function sanitize(list){
+  if (!Array.isArray(list)) return null;
+  return list.filter(c => c && typeof c === "object").map(c => {
+    const type = TYPES[c.type] ? c.type : "other";
+    const dur = clamp(snap(Number(c.dur) || TYPES[type].dur), SNAP, END - START);
+    const day = clamp(Math.round(Number(c.day) || 0), 0, DAYS.length - 1);
+    const start = clamp(snap(Number(c.start) || START), START, END - dur);
+    return {
+      id: String(c.id || uid()), day, start, dur, type,
+      title: String(c.title == null ? TYPES[type].title : c.title).slice(0,120),
+      place: String(c.place || "").slice(0,120),
+      km: String(c.km == null ? "" : c.km).slice(0,12),
+      note: String(c.note || "").slice(0,400),
+      buffer: !!c.buffer
+    };
+  });
+}
+function readFallback(){
+  try { return sanitize(JSON.parse(document.getElementById("fallback").textContent).cards) || []; } catch(e){ return []; }
+}
+function store(kind, key, val){ try { const s = kind === "local" ? localStorage : sessionStorage; if (val == null) s.removeItem(key); else s.setItem(key, val); } catch(e){} }
+function load(kind, key){ try { return (kind === "local" ? localStorage : sessionStorage).getItem(key); } catch(e){ return null; } }
+
+function layoutDay(list){
+  const items = list.map(c => ({c, s:c.start - (c.buffer ? SNAP : 0), e:c.start + c.dur})).sort((a,b) => a.s - b.s || b.e - a.e);
+  const res = {}; let cluster = [], end = -1;
+  const flush = () => {
+    const lanes = [];
+    cluster.forEach(it => { let l = lanes.findIndex(x => x <= it.s); if (l < 0) { l = lanes.length; lanes.push(0); } lanes[l] = it.e; it.lane = l; });
+    cluster.forEach(it => { res[it.c.id] = {lane: it.lane, lanes: lanes.length}; });
+    cluster = [];
+  };
+  items.forEach(it => { if (cluster.length && it.s >= end) { flush(); end = -1; } cluster.push(it); end = Math.max(end, it.e); });
+  if (cluster.length) flush();
+  return res;
+}
+function kmNum(v){ const n = parseFloat(String(v).replace(",", ".")); return isFinite(n) ? n : 0; }
+function programText(cards){
+  return DAYS.map((d,i) => {
+    const list = cards.filter(c => c.day === i).sort((a,b) => a.start - b.start);
+    if (!list.length) return null;
+    const head = d[2].charAt(0).toUpperCase() + d[2].slice(1);
+    return head + "\n" + list.map(c => {
+      const parts = [c.title || TYPES[c.type].label];
+      if (c.km) parts.push(c.km + " км");
+      if (c.place) parts.push(c.place);
+      let s = fmt(c.start) + "–" + fmt(c.start + c.dur) + " " + parts.join(", ");
+      if (c.note) s += ". " + c.note;
+      if (c.buffer) s += " (сбор у отеля в " + fmt(c.start - SNAP) + ")";
+      return s;
+    }).join("\n");
+  }).filter(Boolean).join("\n\n");
+}
+
+function App(){
+  const [cards, setCards] = useState(null);
+  const [loadNote, setLoadNote] = useState("");
+  const [past, setPast] = useState([]);
+  const [sel, setSel] = useState(null);
+  const [drag, setDrag] = useState(null);
+  const [ghost, setGhost] = useState(null);
+  const [addType, setAddType] = useState(null);
+  const [dirty, setDirty] = useState(false);
+  const [status, setStatus] = useState("idle");
+  const [restore, setRestore] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [canSave, setCanSave] = useState(null);
+  const colRefs = useRef([]);
+  const cardsRef = useRef(null); cardsRef.current = cards;
+  const artRef = useRef(null);
+  const taRef = useRef(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(DATA_PATH, {cache:"no-store"}).then(r => { if (!r.ok) throw new Error("http"); return r.json(); })
+      .then(d => { const cs = sanitize(d && d.cards); if (!cs) throw new Error("bad"); if (alive) init(cs); })
+      .catch(() => { if (alive) { init(readFallback()); setLoadNote("Не удалось загрузить сохранённую версию, показываю исходный черновик."); } });
+    if (window.claude && typeof window.claude.use === "function") {
+      window.claude.use("artifact").then(a => { if (!alive) return; artRef.current = a; setCanSave(!!a); }).catch(() => alive && setCanSave(false));
+    } else setCanSave(false);
+    return () => { alive = false; };
+  }, []);
+
+  function init(cs){
+    setCards(cs);
+    const base = JSON.stringify(cs);
+    const pend = load("session", PENDING_KEY) || load("local", UNSAVED_KEY);
+    if (pend) {
+      try { const p = sanitize(JSON.parse(pend)); if (p && JSON.stringify(p) !== base) setRestore(p); else { store("session", PENDING_KEY, null); store("local", UNSAVED_KEY, null); } } catch(e){}
+    }
+  }
+
+  useEffect(() => { if (cards && dirty) store("local", UNSAVED_KEY, JSON.stringify(cards)); }, [cards, dirty]);
+
+  const commit = useCallback((next, hist = true) => {
+    if (hist) setPast(p => [...p.slice(-49), cardsRef.current]);
+    setCards(next); setDirty(true);
+    setStatus(s => (s === "saved" ? "idle" : s));
+  }, []);
+  const update = (id, patch, hist = false) => commit(cardsRef.current.map(c => c.id === id ? {...c, ...patch} : c), hist);
+  const remove = id => { commit(cardsRef.current.filter(c => c.id !== id)); setSel(null); };
+  const duplicate = id => {
+    const c = cardsRef.current.find(x => x.id === id); if (!c) return;
+    const copy = {...c, id: uid(), day: Math.min(c.day + 1, DAYS.length - 1)};
+    commit([...cardsRef.current, copy]); setSel(copy.id);
+  };
+  const pastRef = useRef([]); pastRef.current = past;
+  const undo = () => {
+    const p = pastRef.current; if (!p.length) return;
+    const prev = p[p.length - 1];
+    setPast(p.slice(0, -1)); setCards(prev); setDirty(true); setStatus(s => (s === "saved" ? "idle" : s));
+  };
+
+  useEffect(() => {
+    const onKey = e => {
+      const tag = (e.target && e.target.tagName) || "";
+      const typing = /INPUT|TEXTAREA|SELECT/.test(tag);
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z" && !typing) { e.preventDefault(); undo(); }
+      else if (e.key === "Escape") { setSel(null); setAddType(null); setModal(null); }
+      else if ((e.key === "Delete" || e.key === "Backspace") && sel && !typing) { e.preventDefault(); remove(sel); }
+    };
+    window.addEventListener("keydown", onKey); return () => window.removeEventListener("keydown", onKey);
+  }, [sel]);
+
+  function colIndexAt(x, y, needY){
+    const rects = colRefs.current.map(el => el ? el.getBoundingClientRect() : null);
+    const i = rects.findIndex(r => r && x >= r.left && x < r.right && (!needY || (y >= r.top && y < r.bottom)));
+    return {i, rects};
+  }
+
+  function startCardDrag(e, card, mode){
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    const st = {x:e.clientX, y:e.clientY, moved:false, cur:{day:card.day, start:card.start, dur:card.dur}};
+    const onMove = ev => {
+      const dx = ev.clientX - st.x, dy = ev.clientY - st.y;
+      if (!st.moved && Math.hypot(dx, dy) < 4) return;
+      st.moved = true;
+      if (mode === "move") {
+        const minStart = START + (card.buffer ? SNAP : 0);
+        const start = clamp(card.start + snap(dy / PPM), minStart, END - card.dur);
+        const {i} = colIndexAt(ev.clientX, ev.clientY, false);
+        st.cur = {day: i >= 0 ? i : st.cur.day, start, dur: card.dur};
+      } else {
+        const dur = clamp(snap(card.dur + dy / PPM), SNAP, END - card.start);
+        st.cur = {day: card.day, start: card.start, dur};
+      }
+      setDrag({id: card.id, ...st.cur});
+    };
+    const onUp = () => {
+      window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); window.removeEventListener("pointercancel", onUp);
+      setDrag(null);
+      if (st.moved) {
+        const c = st.cur;
+        if (c.day !== card.day || c.start !== card.start || c.dur !== card.dur) update(card.id, c, true);
+      } else if (mode === "move") setSel(card.id);
+    };
+    window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp); window.addEventListener("pointercancel", onUp);
+  }
+
+  function createAt(type, day, offsetY){
+    const T = TYPES[type];
+    const buffer = T.training;
+    const start = clamp(snap(START + offsetY / PPM), START + (buffer ? SNAP : 0), END - T.dur);
+    const c = {id: uid(), day, start, dur: T.dur, type, title: T.title, place: "", km: "", note: "", buffer};
+    commit([...cardsRef.current, c]); setSel(c.id); setAddType(null);
+  }
+
+  function startChipDrag(e, type){
+    if (e.button !== undefined && e.button !== 0) return;
+    e.preventDefault();
+    const st = {x:e.clientX, y:e.clientY, moved:false};
+    const onMove = ev => {
+      if (!st.moved && Math.hypot(ev.clientX - st.x, ev.clientY - st.y) < 4) return;
+      st.moved = true; setGhost({type, x: ev.clientX, y: ev.clientY});
+    };
+    const onUp = ev => {
+      window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); window.removeEventListener("pointercancel", onUp);
+      setGhost(null);
+      if (!st.moved) { setAddType(t => t === type ? null : type); setSel(null); return; }
+      const {i, rects} = colIndexAt(ev.clientX, ev.clientY, true);
+      if (i >= 0) createAt(type, i, ev.clientY - rects[i].top);
+    };
+    window.addEventListener("pointermove", onMove); window.addEventListener("pointerup", onUp); window.addEventListener("pointercancel", onUp);
+  }
+
+  async function save(){
+    const a = artRef.current;
+    if (!a) { setStatus("readonly"); return; }
+    setStatus("saving");
+    const data = {version:1, updated:new Date().toISOString(), cards: cardsRef.current};
+    const body = JSON.stringify(data, null, 1);
+    store("session", PENDING_KEY, JSON.stringify(cardsRef.current));
+    const attempt = () => a.publish({[DATA_PATH]: {content: body, contentType: "application/json"}});
+    try {
+      try { await attempt(); }
+      catch (e) { if (e && e.code === "upstream_error") { await new Promise(r => setTimeout(r, 900 + Math.random() * 900)); await attempt(); } else throw e; }
+      setDirty(false); setStatus("saved"); store("session", PENDING_KEY, null); store("local", UNSAVED_KEY, null);
+    } catch (e) {
+      const code = e && e.code;
+      if (code === "conflict") setStatus("conflict");
+      else if (["not_writer","not_granted","capability_disabled","consent_required","not_declared","capability_removed"].includes(code)) { setStatus("readonly"); setCanSave(false); store("session", PENDING_KEY, null); }
+      else if (code === "rate_limited") setStatus("rate");
+      else setStatus("error");
+    }
+  }
+
+  async function copyText(text){
+    try { await navigator.clipboard.writeText(text); return true; } catch(e){ return false; }
+  }
+  function openModal(kind){
+    const text = kind === "text" ? programText(cardsRef.current) : kind === "json" ? JSON.stringify({version:1, cards: cardsRef.current}) : "";
+    setModal({kind, text, note:""});
+  }
+  async function modalCopy(){
+    const ok = await copyText(modal.text);
+    if (ok) setModal(m => ({...m, note:"Скопировано."}));
+    else { if (taRef.current) { taRef.current.focus(); taRef.current.select(); } setModal(m => ({...m, note:"Текст выделен, нажмите Ctrl+C (или «Копировать» в меню)."})); }
+  }
+  function modalImport(){
+    try {
+      const raw = JSON.parse(modal.text);
+      const cs = sanitize(Array.isArray(raw) ? raw : raw && raw.cards);
+      if (!cs || !cs.length) throw new Error("empty");
+      commit(cs); setModal(null); setSel(null);
+    } catch(e){ setModal(m => ({...m, note:"Не получилось прочитать программу. Вставьте текст целиком, как его прислал Александр."})); }
+  }
+
+  const eff = useMemo(() => !cards ? [] : cards.map(c => drag && c.id === drag.id ? {...c, day: drag.day, start: drag.start, dur: drag.dur} : c), [cards, drag]);
+  const byDay = useMemo(() => DAYS.map((_, i) => eff.filter(c => c.day === i)), [eff]);
+  const layouts = useMemo(() => byDay.map(layoutDay), [byDay]);
+  const totals = useMemo(() => {
+    const keys = ["swim","bike","run","ofp","other"];
+    const t = {}; keys.forEach(k => { t[k] = {n:0, min:0, km:0}; });
+    (cards || []).forEach(c => { const r = t[c.type]; if (!r) return; r.n++; r.min += c.dur; r.km += kmNum(c.km); });
+    const all = {n:0, min:0, km:0};
+    keys.forEach(k => { all.n += t[k].n; all.min += t[k].min; all.km += t[k].km; });
+    return {rows: keys.map(k => ({k, ...t[k]})), all};
+  }, [cards]);
+
+  if (!cards) return html`<div className="wrap"><h1>Программа Абу-Даби 2027</h1><p className="loading">Загружаю программу…</p></div>`;
+
+  const selCard = cards.find(c => c.id === sel) || null;
+  const statusChip = status === "saving" ? html`<span className="status">Сохраняю…</span>`
+    : dirty ? html`<span className="status dirty">Есть несохранённые изменения</span>`
+    : status === "saved" ? html`<span className="status ok">Сохранено</span>`
+    : html`<span className="status">Сохранённая версия</span>`;
+  const hrs = m => m ? (m / 60).toLocaleString("ru-RU", {maximumFractionDigits:1}) : "—";
+  const kmf = v => v ? v.toLocaleString("ru-RU", {maximumFractionDigits:1}) : "—";
+
+  return html`<div className="wrap">
+    <div className="top">
+      <div>
+        <h1>Программа Абу-Даби 2027</h1>
+        <p className="sub">Сборы 19–27 февраля 2027 · черновик для Александра · вело стартует в 08:00, завтрак общий 06:00–07:00</p>
+      </div>
+      <div className="actions">
+        ${statusChip}
+        <button className="ghost" onClick=${undo} disabled=${!past.length} title="Ctrl+Z">Отменить</button>
+        <button onClick=${() => openModal("text")}>Текст программы</button>
+        <button onClick=${() => openModal("json")}>Скопировать для Семёна</button>
+        <button className="ghost" onClick=${() => setModal({kind:"import", text:"", note:""})}>Вставить присланное</button>
+        <button className="primary" onClick=${save} disabled=${!dirty || status === "saving" || canSave === false}>Сохранить</button>
+      </div>
+    </div>
+
+    ${loadNote && html`<div className="banner"><p>${loadNote}</p></div>`}
+    ${restore && html`<div className="banner"><p>Есть несохранённые изменения с прошлого раза. Вернуть их?</p>
+      <button onClick=${() => { setPast(p => [...p, cardsRef.current]); setCards(restore); setDirty(true); setRestore(null); }}>Вернуть</button>
+      <button className="ghost" onClick=${() => { setRestore(null); store("session", PENDING_KEY, null); store("local", UNSAVED_KEY, null); }}>Не нужно</button></div>`}
+    ${(status === "readonly" || canSave === false) && html`<div className="banner"><p>Из этого окна сохранять нельзя: нет прав на изменение страницы. Двигайте карточки как обычно, а в конце нажмите «Скопировать для Семёна» и пришлите текст Семёну в Telegram. Он загрузит программу у себя.</p></div>`}
+    ${status === "conflict" && html`<div className="banner"><p>Кто-то сохранил программу раньше вас. Страница сейчас обновится, ваши изменения можно будет вернуть кнопкой «Вернуть».</p></div>`}
+    ${status === "rate" && html`<div className="banner"><p>Слишком частые сохранения. Подождите минуту и нажмите «Сохранить» ещё раз.</p></div>`}
+    ${status === "error" && html`<div className="banner"><p>Сохранить не получилось. Попробуйте ещё раз через минуту или нажмите «Скопировать для Семёна».</p></div>`}
+
+    <details className="help" open>
+      <summary>Как пользоваться</summary>
+      <ol>
+        <li>Карточку можно перетащить на другой день или время. Нижний край тянется, так меняется длительность. Шаг 15 минут.</li>
+        <li>Нажмите на карточку, чтобы поменять тип, название, место, километраж и задание. Там же копия и удаление.</li>
+        <li>Новая тренировка: перетащите тип из строки ниже в нужное место календаря или нажмите на тип, а потом на ячейку.</li>
+        <li>Буфер ответственности 15 минут (сбор группы у отеля) встаёт сам перед каждой тренировкой. Его можно выключить в карточке.</li>
+        <li>От Александра нужны объёмы и километраж по дням, интервальные работы и место для ОФП.</li>
+        <li>Когда закончите, нажмите «Сохранить». Если кнопка неактивна, нажмите «Скопировать для Семёна» и пришлите ему текст.</li>
+      </ol>
+    </details>
+
+    <div className="bar">
+      <div className="palette" role="toolbar" aria-label="Типы карточек">
+        ${TYPE_ORDER.map(t => html`<button key=${t} className=${"chip t-" + t + (addType === t ? " on" : "")}
+            onPointerDown=${e => startChipDrag(e, t)} onKeyDown=${e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); setAddType(x => x === t ? null : t); } }}
+            aria-pressed=${addType === t}>${TYPES[t].label}</button>`)}
+      </div>
+    </div>
+    ${addType && html`<p className="hint">Нажмите в календаре, куда поставить «${TYPES[addType].label}». Esc — отмена.</p>`}
+
+    <div className="main">
+    <div className="scroller">
+      <div className="grid" style=${{"--grid-h": (END - START) * PPM + "px", "--hour": HOUR + "px"}}>
+        <div className="corner"></div>
+        ${DAYS.map((d, i) => html`<div key=${"h" + i} className="dayhead"><span className="dw">${d[1]}</span><span className="dd">${d[0]}.2027</span></div>`)}
+        <div className="times" aria-hidden="true">
+          ${Array.from({length: (END - START) / 60}, (_, k) => html`<span key=${k} style=${{top: k * HOUR + "px"}}>${fmt(START + k * 60)}</span>`)}
+        </div>
+        ${DAYS.map((d, i) => html`<div key=${"c" + i} ref=${el => { colRefs.current[i] = el; }}
+            className=${"colbody" + (addType ? " adding" : "")}
+            onPointerDown=${e => { if (e.target !== e.currentTarget) return; if (addType) { const r = e.currentTarget.getBoundingClientRect(); createAt(addType, i, e.clientY - r.top); } else setSel(null); }}>
+          ${byDay[i].map(c => {
+            const lay = layouts[i][c.id] || {lane:0, lanes:1};
+            const T = TYPES[c.type] || TYPES.other;
+            const buf = c.buffer ? SNAP : 0;
+            const top = (c.start - buf - START) * PPM, h = (c.dur + buf) * PPM, w = 100 / lay.lanes;
+            const short = c.dur <= 30;
+            const meta = [c.km ? c.km + " км" : "", c.place].filter(Boolean).join(" · ");
+            return html`<div key=${c.id} tabIndex="0" role="button" title=${[c.title || T.label, meta, c.note].filter(Boolean).join(" · ")}
+                aria-label=${(c.title || T.label) + ", " + d[2] + ", " + fmt(c.start) + "–" + fmt(c.start + c.dur)}
+                className=${"card t-" + c.type + (sel === c.id ? " sel" : "") + (drag && drag.id === c.id ? " dragging" : "") + (short ? " short" : "")}
+                style=${{top: top + "px", height: h + "px", left: "calc(" + (lay.lane * w) + "% + 2px)", width: "calc(" + w + "% - 4px)"}}
+                onPointerDown=${e => startCardDrag(e, c, "move")}
+                onKeyDown=${e => { if (e.key === "Enter") setSel(c.id); }}>
+              ${c.buffer && html`<div className="buf" style=${{height: buf * PPM + "px"}}>сбор ${fmt(c.start - SNAP)}</div>`}
+              <div className="cbody">
+                <span className="ctime">${fmt(c.start)}–${fmt(c.start + c.dur)}</span>
+                <span className="ctitle">${c.title || T.label}</span>
+                ${c.dur > 60 && meta && html`<span className="cmeta">${meta}</span>`}
+                ${!short && c.note && c.dur >= 75 && html`<span className="cnote">${c.note}</span>`}
+              </div>
+              <div className="rz" onPointerDown=${e => startCardDrag(e, c, "resize")}></div>
+            </div>`;
+          })}
+        </div>`)}
+      </div>
+    </div>
+    <aside className="sum" aria-label="Итого по видам" aria-live="polite">
+      <h2>Итого за сборы</h2>
+      <table>
+        <thead><tr><th scope="col">Вид</th><th scope="col">Трен.</th><th scope="col">Часы</th><th scope="col">Км</th></tr></thead>
+        <tbody>
+          ${totals.rows.map(r => html`<tr key=${r.k}><th scope="row"><span className=${"sw t-" + r.k}></span>${TYPES[r.k].label}</th><td>${r.n || "—"}</td><td>${hrs(r.min)}</td><td>${kmf(r.km)}</td></tr>`)}
+        </tbody>
+        <tfoot><tr><th scope="row">Всего</th><td>${totals.all.n}</td><td>${hrs(totals.all.min)}</td><td>${kmf(totals.all.km)}</td></tr></tfoot>
+      </table>
+      <p className="muted small">Часы считаются по длине карточек без буфера, километры берутся из поля «Дистанция» в карточке.</p>
+    </aside>
+    </div>
+
+    ${ghost && html`<div className=${"chip drag-ghost t-" + ghost.type} style=${{left: ghost.x + "px", top: ghost.y + "px"}}>${TYPES[ghost.type].label}</div>`}
+
+    ${selCard && html`<${Editor} card=${selCard} onChange=${(p, h) => update(selCard.id, p, h)} onClose=${() => setSel(null)}
+        onDelete=${() => remove(selCard.id)} onDuplicate=${() => duplicate(selCard.id)} />`}
+
+    ${modal && html`<div className="modal-bg" onPointerDown=${e => { if (e.target === e.currentTarget) setModal(null); }}>
+      <div className="modal" role="dialog" aria-modal="true" aria-labelledby="mtitle">
+        <h2 id="mtitle">${modal.kind === "text" ? "Текст программы" : modal.kind === "json" ? "Программа для Семёна" : "Вставить программу от Александра"}</h2>
+        <p className="muted" style=${{margin:0}}>${modal.kind === "text" ? "По дням, со временем, местом и километражем. Подходит для поста и для переписки."
+          : modal.kind === "json" ? "Скопируйте этот текст целиком и пришлите Семёну. Он вставит его у себя кнопкой «Вставить присланное»."
+          : "Вставьте сюда текст, который прислал Александр, и нажмите «Загрузить». Потом «Сохранить»."}</p>
+        <textarea id="mtext" ref=${taRef} readOnly=${modal.kind !== "import"} value=${modal.text}
+          onChange=${e => setModal(m => ({...m, text: e.target.value, note:""}))}></textarea>
+        ${modal.note && html`<p className="hint" style=${{margin:0}}>${modal.note}</p>`}
+        <div className="actions" style=${{justifyContent:"flex-end"}}>
+          <button className="ghost" onClick=${() => setModal(null)}>Закрыть</button>
+          ${modal.kind === "import" ? html`<button className="primary" onClick=${modalImport}>Загрузить</button>` : html`<button className="primary" onClick=${modalCopy}>Копировать</button>`}
+        </div>
+      </div></div>`}
+  </div>`;
+}
+
+function Editor({card, onChange, onClose, onDelete, onDuplicate}){
+  const T = TYPES[card.type] || TYPES.other;
+  const endOptions = TIMES.filter(m => m > card.start);
+  return html`<aside className="panel" aria-label="Карточка">
+    <div style=${{display:"flex", justifyContent:"space-between", alignItems:"center", gap:8}}>
+      <h2>${card.title || T.label}</h2>
+      <button className="ghost" onClick=${onClose} aria-label="Закрыть">Готово</button>
+    </div>
+    <label className="f" htmlFor="e-type">Тип
+      <select id="e-type" value=${card.type} onChange=${e => { const t = e.target.value; onChange({type: t, buffer: TYPES[t].training}, true); }}>
+        ${TYPE_ORDER.map(t => html`<option key=${t} value=${t}>${TYPES[t].label}</option>`)}
+      </select></label>
+    <label className="f" htmlFor="e-title">Название
+      <input id="e-title" value=${card.title} onChange=${e => onChange({title: e.target.value})} /></label>
+    <label className="f" htmlFor="e-place">Место
+      <input id="e-place" value=${card.place} placeholder="Например, Al Hudayriyat Island" onChange=${e => onChange({place: e.target.value})} /></label>
+    <div className="row">
+      <label className="f" htmlFor="e-day">День
+        <select id="e-day" value=${card.day} onChange=${e => onChange({day: Number(e.target.value)}, true)}>
+          ${DAYS.map((d, i) => html`<option key=${i} value=${i}>${d[1]}, ${d[0]}</option>`)}
+        </select></label>
+      <label className="f" htmlFor="e-km">Дистанция, км
+        <input id="e-km" inputMode="decimal" value=${card.km} placeholder=${card.type === "swim" ? "например, 2,5" : T.km ? "например, 60" : "если есть"} onChange=${e => onChange({km: e.target.value})} /></label>
+    </div>
+    <div className="row">
+      <label className="f" htmlFor="e-start">Начало
+        <select id="e-start" value=${card.start} onChange=${e => { const s = Number(e.target.value); onChange({start: s, dur: Math.min(card.dur, END - s)}, true); }}>
+          ${TIMES.filter(m => m < END && m >= START + (card.buffer ? SNAP : 0)).map(m => html`<option key=${m} value=${m}>${fmt(m)}</option>`)}
+        </select></label>
+      <label className="f" htmlFor="e-end">Конец
+        <select id="e-end" value=${card.start + card.dur} onChange=${e => onChange({dur: Number(e.target.value) - card.start}, true)}>
+          ${endOptions.map(m => html`<option key=${m} value=${m}>${fmt(m)}</option>`)}
+        </select></label>
+    </div>
+    <label className="f" htmlFor="e-note">Задание или комментарий
+      <textarea id="e-note" rows="3" value=${card.note} placeholder="Например, 4 × 1 км в темпе 10 км" onChange=${e => onChange({note: e.target.value})}></textarea></label>
+    <label className="chk" htmlFor="e-buf"><input id="e-buf" type="checkbox" checked=${card.buffer}
+      onChange=${e => { const b = e.target.checked; onChange({buffer: b, start: b ? Math.max(card.start, START + SNAP) : card.start}, true); }} />
+      Буфер 15 минут перед стартом (сбор у отеля)</label>
+    <div className="btns">
+      <button onClick=${onDuplicate}>Копия на следующий день</button>
+      <button className="ghost" onClick=${onDelete}>Удалить</button>
+    </div>
+  </aside>`;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(html`<${App} />`);
+})();
+</script>
+
+</body></html>
